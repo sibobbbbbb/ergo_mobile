@@ -5,6 +5,13 @@ import 'db_helper.dart';
 class DatabaseManager {
   final DatabaseHelper _databaseHelper = DatabaseHelper();
 
+  // Tambahkan fungsi untuk menghapus semua board
+  Future<void> deleteAllData() async {
+    final db = await _databaseHelper.database;
+    await db.delete('Boards');
+    await db.delete('Projects');
+    await db.delete('Tasks');
+  }
   // Boards CRUD operations
   Future<void> createBoard(Board board) async {
     final db = await _databaseHelper.database;

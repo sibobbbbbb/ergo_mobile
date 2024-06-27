@@ -4,20 +4,20 @@ import 'db_manager.dart';
 Future<void> test() async {
   // Buat instance DatabaseManager
   DatabaseManager dbManager = DatabaseManager();
-
-  // Buat tabel
-  await dbManager.createBoard(Board(idBoard: 1, namaBoard: 'Ini board 1', isFavorite: 0));
-  await dbManager.createBoard(Board(idBoard: 2, namaBoard: 'Ini board 2', isFavorite: 0));
-  await dbManager.createBoard(Board(idBoard: 3, namaBoard: 'Ini board 3', isFavorite: 0));
+  // await dbManager.deleteAllData();
 
   // Tambah data Board
   Board board1 = Board(idBoard: 1, namaBoard: 'Ini board 1', isFavorite: 0);
   Board board2 = Board(idBoard: 2, namaBoard: 'Ini board 2', isFavorite: 0);
-  Board board3 = Board(idBoard: 3, namaBoard: 'Ini board 3', isFavorite: 0);
+  // Board board3 = Board(idBoard: 3, namaBoard: 'Ini board 3', isFavorite: 0);
 
   await dbManager.createBoard(board1);
   await dbManager.createBoard(board2);
-  await dbManager.createBoard(board3);
+  // await dbManager.createBoard(board3);
+  List<Board> boards = await dbManager.getAllBoards();
+  for (var project in boards) {
+    print('Board ID: ${project.idBoard}, Board Name: ${project.namaBoard}');
+  }
 
   // Tambah data Project
   Project project1 = Project(idProject: 1, idBoard: 1, namaProject: 'Ini project 1', tingkatKetuntasan: 0, deadlineProject: '2022-12-31', isFavorite: 0);

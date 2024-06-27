@@ -9,11 +9,27 @@ Future<void> test() async {
   // Tambah data Board
   Board board1 = Board(idBoard: 1, namaBoard: 'Ini board 1', isFavorite: 0);
   Board board2 = Board(idBoard: 2, namaBoard: 'Ini board 2', isFavorite: 0);
-  // Board board3 = Board(idBoard: 3, namaBoard: 'Ini board 3', isFavorite: 0);
+  Board board3 = Board(idBoard: 3, namaBoard: 'Ini board 3', isFavorite: 0);
+  Board board4 = Board(idBoard: 4, namaBoard: 'Ini board 4', isFavorite: 0);
+  Board board5 = Board(idBoard: 5, namaBoard: 'Ini board 5', isFavorite: 0);
+  Board board6 = Board(idBoard: 6, namaBoard: 'Ini board 6', isFavorite: 0);
+  Board board7 = Board(idBoard: 7, namaBoard: 'Ini board 7', isFavorite: 0);
+  Board board8 = Board(idBoard: 8, namaBoard: 'Ini board 8', isFavorite: 0);
+  Board board9 = Board(idBoard: 9, namaBoard: 'Ini board 9', isFavorite: 0);
+  Board board10 = Board(idBoard: 10, namaBoard: 'Ini board 10', isFavorite: 0);
+  Board board11 = Board(idBoard: 11, namaBoard: 'Ini board 11', isFavorite: 0);
 
   await dbManager.createBoard(board1);
   await dbManager.createBoard(board2);
-  // await dbManager.createBoard(board3);
+  await dbManager.createBoard(board3);
+  await dbManager.createBoard(board4);
+  await dbManager.createBoard(board5);
+  await dbManager.createBoard(board6);
+  await dbManager.createBoard(board7);
+  await dbManager.createBoard(board8);
+  await dbManager.createBoard(board9);
+  await dbManager.createBoard(board10);
+  await dbManager.createBoard(board11);
   List<Board> boards = await dbManager.getAllBoards();
   for (var project in boards) {
     print('Board ID: ${project.idBoard}, Board Name: ${project.namaBoard}');

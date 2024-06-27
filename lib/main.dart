@@ -1,9 +1,7 @@
 import 'dart:async';
-
 import 'package:ergo_mobile/database/database.dart';
 import 'package:flutter/material.dart';
 import 'database/db_manager.dart';
-import 'database/db_test.dart';
 
 void main() {
   runApp(const MaterialApp(
@@ -34,7 +32,6 @@ class ErgoAppBar extends StatelessWidget implements PreferredSizeWidget {
           padding: const EdgeInsets.only(right: 16.0),
           child: GestureDetector(
             onTap: () {
-              print("PROFIL");
             },
             child: const CircleAvatar(
               backgroundImage: AssetImage('assets/SiBoB.png'),
@@ -62,6 +59,10 @@ class _HomeBoardState extends State<HomeBoard> {
   List<Project> projects = [];
   List<Task> tasks = [];
 
+  // Pagination
+  int currentPage = 0;
+  final int itemsPerPage = 6;
+
   @override
   void initState() {
     super.initState();
@@ -72,7 +73,6 @@ class _HomeBoardState extends State<HomeBoard> {
     List<Board> loadedBoards = await dbManager.getAllBoards();
     List<Project> loadedProjects = await dbManager.getAllProjects();
     List<Task> loadedTasks = await dbManager.getAllTasks();
-    print(loadedBoards.length);
     setState(() {
       boards = loadedBoards;
       projects = loadedProjects;
@@ -83,7 +83,6 @@ class _HomeBoardState extends State<HomeBoard> {
   Widget createBoard(Board board) {
     return Card(
       child: Container(
-        // margin: const EdgeInsets.only(top: 20),
         decoration: BoxDecoration(
           color: const Color(0xFFFFFFFF),
           borderRadius: BorderRadius.circular(20),
@@ -91,25 +90,29 @@ class _HomeBoardState extends State<HomeBoard> {
         width: 150,
         height: 90,
         child: Center(
-            child: Text(
-          board.namaBoard,
-          style: const TextStyle(
-            color: Colors.black,
-            letterSpacing: 2.0,
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
+          child: Text(
+            board.namaBoard,
+            style: const TextStyle(
+              color: Colors.black,
+              letterSpacing: 2.0,
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
           ),
-        )),
+        ),
       ),
     );
   }
 
-  // List<Widget> displayBoards(List<Board> boards) {
-  //   return Card();
-  // }
-
   @override
   Widget build(BuildContext context) {
+    int start = currentPage * itemsPerPage;
+    int end = start + itemsPerPage;
+    List<Board> displayBoards = boards.sublist(
+      start,
+      end > boards.length ? boards.length : end,
+    );
+
     return Scaffold(
       backgroundColor: const Color(0xFF022B42),
       appBar: const ErgoAppBar(),
@@ -121,54 +124,49 @@ class _HomeBoardState extends State<HomeBoard> {
                 flex: 2,
                 child: Container(
                   alignment: Alignment.topLeft,
-                  // Aligns the child to the top-left corner
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 20, 30, 0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      // Aligns text to the left
-                      children: <Widget>[
-                        const Text(
-                          ' Hi User',
-                          style: TextStyle(
-                            fontSize: 40,
-                            fontWeight: FontWeight.bold,
-                            wordSpacing: 5,
-                            color: Colors.black,
-                          ),
+                  padding: const EdgeInsets.fromLTRB(20, 20, 30, 0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      const Text(
+                        ' Hi User',
+                        style: TextStyle(
+                          fontSize: 40,
+                          fontWeight: FontWeight.bold,
+                          wordSpacing: 5,
+                          color: Colors.black,
                         ),
-                        const SizedBox(height: 15),
-                        Container(
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF006494),
-                            borderRadius:
-                                BorderRadius.circular(20), // Sudut melengkung
-                          ),
-                          padding: const EdgeInsets.all(16),
-                          child: const Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Welcome!',
-                                style: TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              SizedBox(height: 8),
-                              Text(
-                                'Choose a board to begin your journey',
-                                style: TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 16,
-                                ),
-                              ),
-                            ],
-                          ),
+                      ),
+                      const SizedBox(height: 15),
+                      Container(
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF006494),
+                          borderRadius: BorderRadius.circular(20),
                         ),
-                      ],
-                    ),
+                        padding: const EdgeInsets.all(16),
+                        child: const Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Welcome!',
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            SizedBox(height: 8),
+                            Text(
+                              'Choose a board to begin your journey',
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 16,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -195,16 +193,70 @@ class _HomeBoardState extends State<HomeBoard> {
                             color: const Color(0xFF006494),
                             borderRadius: BorderRadius.circular(20),
                           ),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: boards
-                                .map((board) => createBoard(board))
-                                .toList(),
+                          child: Padding(
+                            padding: const EdgeInsets.fromLTRB(8, 27, 8, 8),
+                            child: GridView.builder(
+                              gridDelegate:
+                                  const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 2,
+                                mainAxisSpacing: 10,
+                                crossAxisSpacing: 10,
+                                childAspectRatio: 2 / 1,
+                              ),
+                              itemCount: displayBoards.length,
+                              itemBuilder: (context, index) {
+                                return createBoard(displayBoards[index]);
+                              },
+                            ),
                           ),
                         ),
                       ),
-                      const SizedBox(height: 70),
+                      const SizedBox(height: 20),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          ElevatedButton(
+                            onPressed: currentPage > 0
+                                ? () {
+                              setState(() {
+                                currentPage--;
+                              });
+                            }
+                                : null,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF006494),
+                            ),
+                            child: const Text(
+                              'Previous',
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          ElevatedButton(
+                            onPressed: end < boards.length
+                                ? () {
+                              setState(() {
+                                currentPage++;
+                              });
+                            }
+                                : null,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF006494),
+                            ),
+                            child: const Text(
+                              'Next',
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      )
                     ],
                   ),
                 ),
@@ -213,13 +265,13 @@ class _HomeBoardState extends State<HomeBoard> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          print("Floating");
-        },
-        backgroundColor: const Color(0xFF006494),
-        child: const Icon(Icons.add),
-      ),
+      // floatingActionButton: FloatingActionButton(
+      //   onPressed: () {
+      //     print("Floating");
+      //   },
+      //   backgroundColor: const Color(0xFF006494),
+      //   child: const Icon(Icons.add),
+      // ),
     );
   }
 }

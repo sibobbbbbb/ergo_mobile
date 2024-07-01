@@ -30,6 +30,25 @@ class DatabaseManager {
     });
   }
 
+  // Fungsi untuk mendapatkan Board berdasarkan idBoard
+  Future<Board> getBoardById(int idBoard) async {
+    final db = await _databaseHelper.database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      'Boards',
+      where: 'idBoard = ?',
+      whereArgs: [idBoard],
+    );
+    if (maps.isNotEmpty) {
+      return Board(
+        idBoard: maps[0]['idBoard'],
+        namaBoard: maps[0]['namaBoard'],
+        isFavorite: maps[0]['isFavorite'],
+      );
+    } else {
+      throw Exception('Board with id $idBoard not found');
+    }
+  }
+
   Future<void> updateBoard(Board board) async {
     final db = await _databaseHelper.database;
     await db.update(
@@ -70,6 +89,26 @@ class DatabaseManager {
     });
   }
 
+  // Projects by idBoard
+  Future<List<Project>> getProjectsByBoard(int idBoard) async {
+    final db = await _databaseHelper.database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      'Projects',
+      where: 'idBoard = ?',
+      whereArgs: [idBoard],
+    );
+    return List.generate(maps.length, (i) {
+      return Project(
+        idProject: maps[i]['idProject'],
+        idBoard: maps[i]['idBoard'],
+        namaProject: maps[i]['namaProject'],
+        tingkatKetuntasan: maps[i]['tingkatKetuntasan'],
+        deadlineProject: maps[i]['deadlineProject'],
+        isFavorite: maps[i]['isFavorite'],
+      );
+    });
+  }
+
   Future<void> updateProject(Project project) async {
     final db = await _databaseHelper.database;
     await db.update(
@@ -98,6 +137,27 @@ class DatabaseManager {
   Future<List<Task>> getAllTasks() async {
     final db = await _databaseHelper.database;
     final List<Map<String, dynamic>> maps = await db.query('Tasks');
+    return List.generate(maps.length, (i) {
+      return Task(
+        idTask: maps[i]['idTask'],
+        idProject: maps[i]['idProject'],
+        namaTask: maps[i]['namaTask'],
+        status: maps[i]['status'],
+        kategori: maps[i]['kategori'],
+        deskripsi: maps[i]['deskripsi'],
+        deadlineTask: maps[i]['deadlineTask'],
+      );
+    });
+  }
+
+  // Tasks by idProject
+  Future<List<Task>> getTasksByProject(int idProject) async {
+    final db = await _databaseHelper.database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      'Tasks',
+      where: 'idProject = ?',
+      whereArgs: [idProject],
+    );
     return List.generate(maps.length, (i) {
       return Task(
         idTask: maps[i]['idTask'],

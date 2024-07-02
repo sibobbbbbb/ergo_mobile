@@ -1,6 +1,8 @@
 import 'package:ergo_mobile/widgets/home_board.dart';
 import 'package:flutter/material.dart';
 
+const Color colorWidget = Color(0xFF006494);
+
 class ErgoAppBar extends StatelessWidget implements PreferredSizeWidget {
   final bool isGoHome;
 
@@ -29,7 +31,7 @@ class ErgoAppBar extends StatelessWidget implements PreferredSizeWidget {
         child: Image.asset('assets/logoergo.png'),
       ),
       centerTitle: true,
-      backgroundColor: const Color(0xFF006494),
+      backgroundColor: colorWidget,
       actions: <Widget>[
         Padding(
           padding: const EdgeInsets.only(right: 16.0),

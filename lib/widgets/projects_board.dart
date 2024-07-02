@@ -103,7 +103,7 @@ class _ProjectBoardState extends State<ProjectBoard> {
                       const SizedBox(height: 15),
                       Container(
                         decoration: BoxDecoration(
-                          color: const Color(0xFF006494),
+                          color: colorWidget,
                           borderRadius: BorderRadius.circular(20),
                         ),
                         padding: const EdgeInsets.all(16),
@@ -136,7 +136,7 @@ class _ProjectBoardState extends State<ProjectBoard> {
               Expanded(
                 flex: 5,
                 child: Padding(
-                  padding: const EdgeInsets.all(20.0),
+                  padding: const EdgeInsets.fromLTRB(20, 20, 30, 0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -149,11 +149,11 @@ class _ProjectBoardState extends State<ProjectBoard> {
                           color: Colors.black,
                         ),
                       ),
-                      const SizedBox(height: 10),
+                      const SizedBox(height: 35),
                       Expanded(
                         child: Container(
                           decoration: BoxDecoration(
-                            color: const Color(0xFF006494),
+                            color: colorWidget,
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Padding(
@@ -174,7 +174,7 @@ class _ProjectBoardState extends State<ProjectBoard> {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 5),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -187,7 +187,7 @@ class _ProjectBoardState extends State<ProjectBoard> {
                             }
                                 : null,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF006494),
+                              backgroundColor: colorWidget,
                             ),
                             child: const Text(
                               'Previous',
@@ -207,7 +207,7 @@ class _ProjectBoardState extends State<ProjectBoard> {
                             }
                                 : null,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF006494),
+                              backgroundColor: colorWidget,
                             ),
                             child: const Text(
                               'Next',
@@ -219,7 +219,8 @@ class _ProjectBoardState extends State<ProjectBoard> {
                             ),
                           ),
                         ],
-                      )
+                      ),
+                      const SizedBox(height: 9),
                     ],
                   ),
                 ),

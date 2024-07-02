@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:ergo_mobile/widgets/projects_board.dart';
 import 'package:flutter/material.dart';
 import '../database/database.dart';
@@ -26,6 +28,53 @@ class _HomeBoardState extends State<HomeBoard> {
   }
 
   Future<void> loadBoards() async {
+    List<Board> loadedBoards = await dbManager.getAllBoards();
+    setState(() {
+      boards = loadedBoards;
+    });
+  }
+
+  final TextEditingController _boardNameController = TextEditingController();
+
+  void _showAddBoardDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          // backgroundColor: colorWidget,
+          title: const Text('Board Title:'),
+          content: TextField(
+            controller: _boardNameController,
+            decoration: const InputDecoration(
+              hintText: 'Enter board title',
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            ElevatedButton(
+              child: const Text('Create Project'),
+              onPressed: () {
+                // Handle the create board logic here
+                String boardName = _boardNameController.text;
+                addBoard(boardName);
+                Navigator.of(context).pop(); // Close the dialog
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> addBoard(String boardName) async {
+    int newIdBoard = await dbManager.getLastBoardId() + 1;
+    Board board = Board(idBoard: newIdBoard, namaBoard: boardName, isFavorite: 0);
+    await dbManager.createBoard(board);
     List<Board> loadedBoards = await dbManager.getAllBoards();
     setState(() {
       boards = loadedBoards;
@@ -102,7 +151,7 @@ class _HomeBoardState extends State<HomeBoard> {
                       const SizedBox(height: 15),
                       Container(
                         decoration: BoxDecoration(
-                          color: const Color(0xFF006494),
+                          color: colorWidget,
                           borderRadius: BorderRadius.circular(20),
                         ),
                         padding: const EdgeInsets.all(16),
@@ -135,7 +184,7 @@ class _HomeBoardState extends State<HomeBoard> {
               Expanded(
                 flex: 5,
                 child: Padding(
-                  padding: const EdgeInsets.all(20.0),
+                  padding: const EdgeInsets.fromLTRB(20, 20, 30, 0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -149,14 +198,43 @@ class _HomeBoardState extends State<HomeBoard> {
                         ),
                       ),
                       const SizedBox(height: 10),
+                      Padding(
+                        padding: const EdgeInsets.only(left: 5),
+                        child: Row(children: [
+                          Container(
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              height: 35,
+                              width: 158,
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  _showAddBoardDialog();
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: colorWidget,
+                                ),
+                                child: const Center(
+                                  child: Text(
+                                    '+ Add New Board',
+                                    style: TextStyle(
+                                      color: Colors.black,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              )),
+                        ]),
+                      ),
+                      const SizedBox(height: 10),
                       Expanded(
                         child: Container(
                           decoration: BoxDecoration(
-                            color: const Color(0xFF006494),
+                            color: colorWidget,
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Padding(
-                            padding: const EdgeInsets.fromLTRB(8, 27, 8, 8),
+                            padding: const EdgeInsets.fromLTRB(8, 23, 8, 8),
                             child: GridView.builder(
                               gridDelegate:
                                   const SliverGridDelegateWithFixedCrossAxisCount(
@@ -173,7 +251,7 @@ class _HomeBoardState extends State<HomeBoard> {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 5),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -186,7 +264,7 @@ class _HomeBoardState extends State<HomeBoard> {
                                   }
                                 : null,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF006494),
+                              backgroundColor: colorWidget,
                             ),
                             child: const Text(
                               'Previous',
@@ -206,7 +284,7 @@ class _HomeBoardState extends State<HomeBoard> {
                                   }
                                 : null,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF006494),
+                              backgroundColor: colorWidget,
                             ),
                             child: const Text(
                               'Next',
@@ -218,7 +296,8 @@ class _HomeBoardState extends State<HomeBoard> {
                             ),
                           ),
                         ],
-                      )
+                      ),
+                      const SizedBox(height: 9),
                     ],
                   ),
                 ),

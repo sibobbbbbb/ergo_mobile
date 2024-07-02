@@ -68,6 +68,17 @@ class DatabaseManager {
     );
   }
 
+  Future<int> getLastBoardId() async {
+    final db = await _databaseHelper.database;
+    final List<Map<String, dynamic>> result = await db.rawQuery('SELECT idBoard FROM Boards ORDER BY idBoard DESC LIMIT 1');
+
+    if (result.isNotEmpty) {
+      return result.first['idBoard'];
+    } else {
+      return 0; // Return 0 if there are no boards
+    }
+  }
+
   // Projects CRUD operations
   Future<void> createProject(Project project) async {
     final db = await _databaseHelper.database;
@@ -127,6 +138,18 @@ class DatabaseManager {
       whereArgs: [idProject],
     );
   }
+
+  Future<int> getLastProjectId() async {
+    final db = await _databaseHelper.database;
+    final List<Map<String, dynamic>> result = await db.rawQuery('SELECT idProject FROM Projects ORDER BY idProject DESC LIMIT 1');
+
+    if (result.isNotEmpty) {
+      return result.first['idProject'];
+    } else {
+      return 0; // Return 0 if there are no projects
+    }
+  }
+
 
   // Tasks CRUD operations
   Future<void> createTask(Task task) async {
@@ -189,4 +212,16 @@ class DatabaseManager {
       whereArgs: [idTask],
     );
   }
+
+  Future<int> getLastTaskId() async {
+    final db = await _databaseHelper.database;
+    final List<Map<String, dynamic>> result = await db.rawQuery('SELECT idTask FROM Tasks ORDER BY idTask DESC LIMIT 1');
+
+    if (result.isNotEmpty) {
+      return result.first['idTask'];
+    } else {
+      return 0; // Return 0 if there are no tasks
+    }
+  }
+
 }

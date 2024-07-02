@@ -19,7 +19,7 @@ class _TaskBoardState extends State<TaskBoard> {
 
   // Pagination
   int currentPage = 0;
-  final int itemsPerPage = 6;
+  final int itemsPerPage = 2;
 
   @override
   void initState() {
@@ -28,32 +28,90 @@ class _TaskBoardState extends State<TaskBoard> {
   }
 
   Future<void> loadBoards() async {
-    List<Task> loadedProjects =
+    List<Task> loadedTasks =
         await dbManager.getTasksByProject(widget.parentProject.idBoard);
     setState(() {
-      tasks = loadedProjects;
+      tasks = loadedTasks;
     });
   }
 
   Widget createTask(Task task) {
     return Card(
+      color: Colors.white,
       child: Container(
         decoration: BoxDecoration(
-          color: const Color(0xFFFFFFFF),
-          borderRadius: BorderRadius.circular(20),
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(30.0),
         ),
-        width: 150,
-        height: 90,
-        child: Center(
-          child: Text(
-            task.namaTask,
-            style: const TextStyle(
-              color: Colors.black,
-              letterSpacing: 2.0,
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
+        child: Padding(
+          padding: const EdgeInsets.all(10),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                task.namaTask,
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                ),
+              ),
+              const SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  _buildStatusChip(task.status),
+                  Text(
+                    task.kategori,
+                    style: const TextStyle(
+                      color: Colors.black,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Text(
+                'Due Date: ${task.deadlineTask}',
+                style: const TextStyle(
+                  color: Colors.black,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                task.deskripsi,
+                style: const TextStyle(
+                  color: Colors.black,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatusChip(String status) {
+    Color color;
+    switch (status) {
+      case 'Completed':
+        color = Colors.greenAccent;
+        break;
+      case 'Not Yet Started':
+        color = Colors.redAccent;
+        break;
+      default:
+        color = Colors.grey;
+    }
+    return Chip(
+      backgroundColor: color,
+      label: Text(
+        status,
+        style: const TextStyle(
+          color: Colors.black,
+          fontWeight: FontWeight.bold,
         ),
       ),
     );
@@ -63,7 +121,7 @@ class _TaskBoardState extends State<TaskBoard> {
   Widget build(BuildContext context) {
     int start = currentPage * itemsPerPage;
     int end = start + itemsPerPage;
-    tasks.sublist(
+    List<Task> currentTasks = tasks.sublist(
       start,
       end > tasks.length ? tasks.length : end,
     );
@@ -95,7 +153,7 @@ class _TaskBoardState extends State<TaskBoard> {
                       const SizedBox(height: 15),
                       Container(
                         decoration: BoxDecoration(
-                          color: const Color(0xFF006494),
+                          color: colorWidget,
                           borderRadius: BorderRadius.circular(20),
                         ),
                         padding: const EdgeInsets.all(16),
@@ -128,7 +186,7 @@ class _TaskBoardState extends State<TaskBoard> {
               Expanded(
                 flex: 5,
                 child: Padding(
-                  padding: const EdgeInsets.all(20.0),
+                  padding: const EdgeInsets.fromLTRB(20,0,20,0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -141,41 +199,70 @@ class _TaskBoardState extends State<TaskBoard> {
                           color: Colors.black,
                         ),
                       ),
-                      const SizedBox(height: 10),
+                      const SizedBox(height: 6),
                       Expanded(
                         child: Container(
                           decoration: BoxDecoration(
-                            color: const Color(0xFF006494),
+                            color: colorWidget,
                             borderRadius: BorderRadius.circular(20),
                           ),
-                          child: SingleChildScrollView(
-                            child: SingleChildScrollView(
-                              scrollDirection: Axis.horizontal,
-                              child: DataTable(
-                                columns: const [
-                                  DataColumn(label: Text('Task Name')),
-                                  DataColumn(label: Text('Status')),
-                                  DataColumn(label: Text('Category')),
-                                  DataColumn(label: Text('Due Date / Time')),
-                                  DataColumn(label: Text('Description')),
-                                ],
-                                rows: tasks.map((task) {
-                                  return DataRow(
-                                    cells: [
-                                      DataCell(Text(task.namaTask)),
-                                      DataCell(Text(task.status)),
-                                      DataCell(Text(task.kategori)),
-                                      DataCell(Text(task.deadlineTask)),
-                                      DataCell(Text(task.deskripsi)),
-                                    ],
-                                  );
-                                }).toList(),
-                              ),
-                            ),
+                          child: ListView.builder(
+                            padding: const EdgeInsets.fromLTRB(13, 13, 13, 16),
+                            itemCount: currentTasks.length,
+                            itemBuilder: (context, index) {
+                              final task = currentTasks[index];
+                              return createTask(task);
+                            },
                           ),
                         ),
                       ),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 5),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          ElevatedButton(
+                            onPressed: currentPage > 0
+                                ? () {
+                              setState(() {
+                                currentPage--;
+                              });
+                            }
+                                : null,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: colorWidget,
+                            ),
+                            child: const Text(
+                              'Previous',
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          ElevatedButton(
+                            onPressed: end < tasks.length
+                                ? () {
+                              setState(() {
+                                currentPage++;
+                              });
+                            }
+                                : null,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: colorWidget,
+                            ),
+                            child: const Text(
+                              'Next',
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 9),
                     ],
                   ),
                 ),

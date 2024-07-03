@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:percent_indicator/linear_percent_indicator.dart';
 import '../database/database.dart';
 import '../database/db_manager.dart';
 import 'app_bar.dart';
@@ -24,14 +25,119 @@ class _TaskBoardState extends State<TaskBoard> {
   @override
   void initState() {
     super.initState();
-    loadBoards();
+    loadTasks();
   }
 
-  Future<void> loadBoards() async {
+  Future<void> loadTasks() async {
     List<Task> loadedTasks =
         await dbManager.getTasksByProject(widget.parentProject.idBoard);
     setState(() {
       tasks = loadedTasks;
+    });
+  }
+
+  final TextEditingController _projectNameController = TextEditingController();
+
+  void _showAddProjectDialog() {
+    DateTime? selectedDeadline;
+    bool nameError = false;
+    bool deadlineError = false;
+
+    Future<void> selectDeadline(BuildContext context) async {
+      final DateTime? picked = await showDatePicker(
+        context: context,
+        initialDate: DateTime.now(),
+        firstDate: DateTime.now(),
+        lastDate: DateTime(2101),
+      );
+      if (picked != null && picked != selectedDeadline) {
+        setState(() {
+          selectedDeadline = picked;
+        });
+      }
+    }
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: const Text('Project Title:'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  TextField(
+                    controller: _projectNameController,
+                    decoration: InputDecoration(
+                      hintText: 'Enter project title',
+                      errorText: nameError ? 'Project name is required' : null,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          selectedDeadline == null
+                              ? 'No deadline chosen!'
+                              : 'Deadline: ${selectedDeadline!.toLocal()}'.split(' ')[0],
+                          style: TextStyle(
+                            color: deadlineError ? Colors.red : Colors.black,
+                          ),
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () => selectDeadline(context).then((_) => setState(() {})),
+                        child: const Text('Select Deadline'),
+                      ),
+                    ],
+                  ),
+                  if (deadlineError)
+                    const Text(
+                      'Deadline is required',
+                      style: TextStyle(color: Colors.red),
+                    ),
+                ],
+              ),
+              actions: <Widget>[
+                TextButton(
+                  child: const Text('Cancel'),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+                ElevatedButton(
+                  child: const Text('Create Project'),
+                  onPressed: () {
+                    setState(() {
+                      nameError = _projectNameController.text.isEmpty;
+                      deadlineError = selectedDeadline == null;
+                    });
+
+                    if (!nameError && !deadlineError) {
+                      String projectName = _projectNameController.text;
+                      DateTime? deadline = selectedDeadline;
+                      addProject(projectName, deadline); // Pass the deadline to addProject
+                      Navigator.of(context).pop(); // Close the dialog
+                    }
+                  },
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+
+  Future<void> addProject(String projectName, DateTime? deadline) async {
+    int newIdProject = await dbManager.getLastProjectId() + 1;
+    Project project = Project(idProject: newIdProject, idBoard: widget.parentProject.idBoard, namaProject: projectName , tingkatKetuntasan: 0, deadlineProject: deadline!.toIso8601String() , isFavorite: 0);
+    await dbManager.createProject(project);
+    setState(() {
+      loadTasks();
     });
   }
 
@@ -51,16 +157,16 @@ class _TaskBoardState extends State<TaskBoard> {
               Text(
                 task.namaTask,
                 style: const TextStyle(
-                  fontSize: 24,
+                  fontSize: 22,
                   fontWeight: FontWeight.bold,
                   color: Colors.black,
                 ),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 5),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  _buildStatusChip(task.status),
+                  buildStatusChip(task.status),
                   Text(
                     task.kategori,
                     style: const TextStyle(
@@ -70,7 +176,7 @@ class _TaskBoardState extends State<TaskBoard> {
                   ),
                 ],
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 5),
               Text(
                 'Due Date: ${task.deadlineTask}',
                 style: const TextStyle(
@@ -78,7 +184,7 @@ class _TaskBoardState extends State<TaskBoard> {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 5),
               Text(
                 task.deskripsi,
                 style: const TextStyle(
@@ -93,8 +199,8 @@ class _TaskBoardState extends State<TaskBoard> {
     );
   }
 
-  Widget _buildStatusChip(String status) {
-    Color color;
+  Widget buildStatusChip(String status) {
+    Color? color;
     switch (status) {
       case 'Completed':
         color = Colors.greenAccent;
@@ -102,8 +208,9 @@ class _TaskBoardState extends State<TaskBoard> {
       case 'Not Yet Started':
         color = Colors.redAccent;
         break;
-      default:
-        color = Colors.grey;
+      case 'On Progress':
+        color = Colors.blueAccent;
+        break;
     }
     return Chip(
       backgroundColor: color,
@@ -137,7 +244,7 @@ class _TaskBoardState extends State<TaskBoard> {
                 flex: 2,
                 child: Container(
                   alignment: Alignment.topLeft,
-                  padding: const EdgeInsets.fromLTRB(20, 20, 30, 0),
+                  padding: const EdgeInsets.fromLTRB(20, 9, 30, 0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
@@ -150,35 +257,68 @@ class _TaskBoardState extends State<TaskBoard> {
                           color: Colors.black,
                         ),
                       ),
-                      const SizedBox(height: 15),
+                      const SizedBox(height: 3),
                       Container(
                         decoration: BoxDecoration(
                           color: colorWidget,
                           borderRadius: BorderRadius.circular(20),
                         ),
-                        padding: const EdgeInsets.all(16),
-                        child: const Column(
+                        padding: const EdgeInsets.fromLTRB(16, 10, 10, 9.37),
+                        child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              'Welcome!',
+                            const Text(
+                              'So,',
                               style: TextStyle(
                                 color: Colors.black,
-                                fontSize: 24,
+                                fontSize: 22,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                            SizedBox(height: 8),
-                            Text(
-                              'This is your workspace to track all your task',
+                            const SizedBox(height: 8),
+                            const Text(
+                              'This is your workspace to track all your task.',
                               style: TextStyle(
                                 color: Colors.black,
-                                fontSize: 16,
+                                fontSize: 15,
                               ),
+                            ),
+                            const SizedBox(height: 4),
+                            const Text(
+                              'And This Is Your Progress Bar',
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 5),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
+                                LinearPercentIndicator(
+                                  lineHeight: 17,
+                                  width: 290,
+                                  percent: widget.parentProject.tingkatKetuntasan,
+                                  backgroundColor: Colors.grey[300],
+                                  progressColor: Colors.blue,
+                                  // barRadius: const Radius.circular(20),
+                                ),
+                                // const SizedBox(width: ,),
+                                Text(
+                                  ' ${(widget.parentProject.tingkatKetuntasan * 100).toString()}%',
+                                  style: const TextStyle(
+                                    color: Colors.black,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
                         ),
                       ),
+
                     ],
                   ),
                 ),
@@ -198,6 +338,34 @@ class _TaskBoardState extends State<TaskBoard> {
                           wordSpacing: 5,
                           color: Colors.black,
                         ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(left: 5),
+                        child: Row(children: [
+                          Container(
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              height: 35,
+                              width: 166,
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  _showAddProjectDialog();
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: colorWidget,
+                                ),
+                                child: const Center(
+                                  child: Text(
+                                    '+ Add New Task',
+                                    style: TextStyle(
+                                      color: Colors.black,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              )),
+                        ]),
                       ),
                       const SizedBox(height: 6),
                       Expanded(

@@ -38,7 +38,7 @@ class DatabaseHelper {
         idProject INTEGER PRIMARY KEY,
         idBoard INTEGER,
         namaProject TEXT NOT NULL,
-        tingkatKetuntasan INTEGER,
+        tingkatKetuntasan REAL,
         deadlineProject TEXT,
         isFavorite INTEGER NOT NULL
       )

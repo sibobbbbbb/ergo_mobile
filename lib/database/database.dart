@@ -18,7 +18,7 @@ class Project {
   final int idProject;
   final int idBoard;
   final String namaProject;
-  final int tingkatKetuntasan;
+  final double tingkatKetuntasan;
   final String deadlineProject;
   final int isFavorite;
 

@@ -93,7 +93,7 @@ class DatabaseManager {
         idProject: maps[i]['idProject'],
         idBoard: maps[i]['idBoard'],
         namaProject: maps[i]['namaProject'],
-        tingkatKetuntasan: maps[i]['tingkatKetuntasan'],
+        tingkatKetuntasan: (maps[i]['tingkatKetuntasan'] as num).toDouble(),
         deadlineProject: maps[i]['deadlineProject'],
         isFavorite: maps[i]['isFavorite'],
       );
@@ -113,7 +113,7 @@ class DatabaseManager {
         idProject: maps[i]['idProject'],
         idBoard: maps[i]['idBoard'],
         namaProject: maps[i]['namaProject'],
-        tingkatKetuntasan: maps[i]['tingkatKetuntasan'],
+        tingkatKetuntasan: (maps[i]['tingkatKetuntasan'] as num).toDouble() ,
         deadlineProject: maps[i]['deadlineProject'],
         isFavorite: maps[i]['isFavorite'],
       );

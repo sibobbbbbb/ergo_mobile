@@ -183,8 +183,8 @@ class _ProjectBoardState extends State<ProjectBoard> {
                   const SizedBox(width: 5),
                   Text(
                     project.deadlineProject,
-                    style: TextStyle(
-                      color: Colors.grey[700],
+                    style: const TextStyle(
+                      color: Colors.black,
                       letterSpacing: 1.0,
                       fontSize: 12,
                     ),
@@ -192,9 +192,9 @@ class _ProjectBoardState extends State<ProjectBoard> {
                 ],
               ),
               Text(
-                ' ${(project.tingkatKetuntasan).toString()}% Completed',
-                style: TextStyle(
-                  color: Colors.grey[700],
+                ' ${(project.tingkatKetuntasan * 100).toString()}% Completed',
+                style: const TextStyle(
+                  color: Colors.black,
                   fontSize: 12,
                 ),
               ),

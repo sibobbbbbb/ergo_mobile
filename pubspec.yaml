@@ -28,6 +28,7 @@ dependencies:
   sqflite: ^2.0.0+3
   path: ^1.8.0
   cupertino_icons: ^1.0.6
+  percent_indicator: ^4.2.2
 
 dev_dependencies:
   flutter_test:

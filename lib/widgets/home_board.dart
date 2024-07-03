@@ -75,9 +75,8 @@ class _HomeBoardState extends State<HomeBoard> {
     int newIdBoard = await dbManager.getLastBoardId() + 1;
     Board board = Board(idBoard: newIdBoard, namaBoard: boardName, isFavorite: 0);
     await dbManager.createBoard(board);
-    List<Board> loadedBoards = await dbManager.getAllBoards();
     setState(() {
-      boards = loadedBoards;
+      loadBoards();
     });
   }
 

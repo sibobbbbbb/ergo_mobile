@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:ergo_mobile/widgets/task_page.dart';
 import 'package:flutter/material.dart';
 import '../database/database.dart';
@@ -23,44 +22,183 @@ class _ProjectBoardState extends State<ProjectBoard> {
   @override
   void initState() {
     super.initState();
-    loadBoards();
+    loadProjects();
   }
 
-  Future<void> loadBoards() async {
+  Future<void> loadProjects() async {
     List<Project> loadedProjects = await dbManager.getProjectsByBoard(widget.parentBoard.idBoard);
     setState(() {
       projects = loadedProjects;
     });
   }
 
+  final TextEditingController _projectNameController = TextEditingController();
+
+  void _showAddProjectDialog() {
+    DateTime? selectedDeadline;
+    bool nameError = false;
+    bool deadlineError = false;
+
+    Future<void> selectDeadline(BuildContext context) async {
+      final DateTime? picked = await showDatePicker(
+        context: context,
+        initialDate: DateTime.now(),
+        firstDate: DateTime.now(),
+        lastDate: DateTime(2101),
+      );
+      if (picked != null && picked != selectedDeadline) {
+        setState(() {
+          selectedDeadline = picked;
+        });
+      }
+    }
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: const Text('Project Title:'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  TextField(
+                    controller: _projectNameController,
+                    decoration: InputDecoration(
+                      hintText: 'Enter project title',
+                      errorText: nameError ? 'Project name is required' : null,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          selectedDeadline == null
+                              ? 'No deadline chosen!'
+                              : 'Deadline: ${selectedDeadline!.toLocal()}'.split(' ')[0],
+                          style: TextStyle(
+                            color: deadlineError ? Colors.red : Colors.black,
+                          ),
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () => selectDeadline(context).then((_) => setState(() {})),
+                        child: const Text('Select Deadline'),
+                      ),
+                    ],
+                  ),
+                  if (deadlineError)
+                    const Text(
+                      'Deadline is required',
+                      style: TextStyle(color: Colors.red),
+                    ),
+                ],
+              ),
+              actions: <Widget>[
+                TextButton(
+                  child: const Text('Cancel'),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+                ElevatedButton(
+                  child: const Text('Create Project'),
+                  onPressed: () {
+                    setState(() {
+                      nameError = _projectNameController.text.isEmpty;
+                      deadlineError = selectedDeadline == null;
+                    });
+
+                    if (!nameError && !deadlineError) {
+                      String projectName = _projectNameController.text;
+                      DateTime? deadline = selectedDeadline;
+                      addProject(projectName, deadline); // Pass the deadline to addProject
+                      Navigator.of(context).pop(); // Close the dialog
+                    }
+                  },
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+
+  Future<void> addProject(String projectName, DateTime? deadline) async {
+    int newIdProject = await dbManager.getLastProjectId() + 1;
+    Project project = Project(idProject: newIdProject, idBoard: widget.parentBoard.idBoard, namaProject: projectName , tingkatKetuntasan: 0, deadlineProject: deadline!.toIso8601String() , isFavorite: 0);
+    await dbManager.createProject(project);
+    setState(() {
+      loadProjects();
+    });
+  }
+
   Widget createProject(Project project) {
     return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+      ),
       child: InkWell(
         onTap: () {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => TaskBoard(parentProject: project,),
+              builder: (context) => TaskBoard(parentProject: project),
             ),
           );
         },
         child: Container(
           decoration: BoxDecoration(
-            color: const Color(0xFFFFFFFF),
+            color: const Color(0xFFF5F5F5),
             borderRadius: BorderRadius.circular(20),
           ),
+          padding: const EdgeInsets.fromLTRB(18, 8, 10, 0),
           width: 150,
-          height: 90,
-          child: Center(
-            child: Text(
-              project.namaProject,
-              style: const TextStyle(
-                color: Colors.black,
-                letterSpacing: 2.0,
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                project.namaProject,
+                style: const TextStyle(
+                  color: Colors.black,
+                  letterSpacing: 1.5,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-            ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Icon(
+                    Icons.calendar_today,
+                    color: Colors.grey[700],
+                    size: 14,
+                  ),
+                  const SizedBox(width: 5),
+                  Text(
+                    project.deadlineProject,
+                    style: TextStyle(
+                      color: Colors.grey[700],
+                      letterSpacing: 1.0,
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+              Text(
+                ' ${(project.tingkatKetuntasan).toString()}% Completed',
+                style: TextStyle(
+                  color: Colors.grey[700],
+                  fontSize: 12,
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -149,7 +287,36 @@ class _ProjectBoardState extends State<ProjectBoard> {
                           color: Colors.black,
                         ),
                       ),
-                      const SizedBox(height: 35),
+                      const SizedBox(height: 10),
+                      Padding(
+                        padding: const EdgeInsets.only(left: 5),
+                        child: Row(children: [
+                          Container(
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              height: 35,
+                              width: 166,
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  _showAddProjectDialog();
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: colorWidget,
+                                ),
+                                child: const Center(
+                                  child: Text(
+                                    '+ Add New Project',
+                                    style: TextStyle(
+                                      color: Colors.black,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              )),
+                        ]),
+                      ),
+                      const SizedBox(height: 10),
                       Expanded(
                         child: Container(
                           decoration: BoxDecoration(

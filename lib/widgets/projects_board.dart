@@ -135,7 +135,14 @@ class _ProjectBoardState extends State<ProjectBoard> {
 
   Future<void> addProject(String projectName, DateTime? deadline) async {
     int newIdProject = await dbManager.getLastProjectId() + 1;
-    Project project = Project(idProject: newIdProject, idBoard: widget.parentBoard.idBoard, namaProject: projectName , tingkatKetuntasan: 0, deadlineProject: deadline!.toIso8601String() , isFavorite: 0);
+    Project project = Project(
+        idProject: newIdProject,
+        idBoard: widget.parentBoard.idBoard,
+        namaProject: projectName ,
+        tingkatKetuntasan: 0,
+        deadlineProject: '${deadline?.year}-${deadline?.month}-${deadline?.day}' ,
+        isFavorite: 0
+    );
     await dbManager.createProject(project);
     setState(() {
       loadProjects();
@@ -331,7 +338,7 @@ class _ProjectBoardState extends State<ProjectBoard> {
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Padding(
-                            padding: const EdgeInsets.fromLTRB(8, 27, 8, 8),
+                            padding: const EdgeInsets.fromLTRB(8, 16, 8, 8),
                             child: GridView.builder(
                               gridDelegate:
                               const SliverGridDelegateWithFixedCrossAxisCount(

@@ -124,6 +124,7 @@ class _HomeBoardState extends State<HomeBoard> {
     );
 
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       backgroundColor: const Color(0xFF022B42),
       appBar: const ErgoAppBar(isGoHome: false),
       body: Stack(

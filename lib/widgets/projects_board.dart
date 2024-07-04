@@ -215,6 +215,7 @@ class _ProjectBoardState extends State<ProjectBoard> {
     );
 
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       backgroundColor: const Color(0xFF022B42),
       appBar: const ErgoAppBar(isGoHome: true),
       body: Stack(

@@ -8,7 +8,6 @@ import 'app_bar.dart';
 
 class TaskBoard extends StatefulWidget {
   final Project parentProject;
-
   const TaskBoard({super.key, required this.parentProject});
 
   @override
@@ -31,7 +30,7 @@ class _TaskBoardState extends State<TaskBoard> {
 
   Future<void> loadTasks() async {
     List<Task> loadedTasks =
-        await dbManager.getTasksByProject(widget.parentProject.idBoard);
+        await dbManager.getTasksByProject(widget.parentProject.idProject);
     setState(() {
       tasks = loadedTasks;
     });

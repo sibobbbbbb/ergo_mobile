@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../database/database.dart';
 import '../database/db_manager.dart';
 import 'app_bar.dart';
+import 'home_board.dart';
 
 class ProjectBoard extends StatefulWidget {
   final Board parentBoard;
@@ -27,6 +28,7 @@ class _ProjectBoardState extends State<ProjectBoard> {
     loadProjects();
   }
 
+  // load project by id board from database
   Future<void> loadProjects() async {
     List<Project> loadedProjects = (!isFavorite)?
     await dbManager.getProjectsByBoard(widget.parentBoard.idBoard):
@@ -37,6 +39,7 @@ class _ProjectBoardState extends State<ProjectBoard> {
     });
   }
 
+  // pop up widget for add new project
   final TextEditingController _projectNameController = TextEditingController();
 
   void _showAddProjectDialog() {
@@ -120,7 +123,7 @@ class _ProjectBoardState extends State<ProjectBoard> {
                       String projectName = _projectNameController.text;
                       DateTime? deadline = selectedDeadline;
                       addProject(projectName, deadline); // Pass the deadline to addProject
-                      Navigator.of(context).pop(); // Close the dialog
+                      Navigator.of(context).pop();
                     }
                   },
                 ),
@@ -132,7 +135,7 @@ class _ProjectBoardState extends State<ProjectBoard> {
     );
   }
 
-
+  // add project to database
   Future<void> addProject(String projectName, DateTime? deadline) async {
     int newIdProject = await dbManager.getLastProjectId() + 1;
     Project project = Project(
@@ -149,6 +152,7 @@ class _ProjectBoardState extends State<ProjectBoard> {
     });
   }
 
+  // create widget for display project
   Widget createProject(Project project) {
     return Card(
       elevation: 4,
@@ -217,6 +221,110 @@ class _ProjectBoardState extends State<ProjectBoard> {
     );
   }
 
+  // update fav board
+  Future<void> updateFavBoard(Board board) async
+  {
+    await dbManager.updateBoard(board);
+  }
+
+  // delete board
+  Future<void> deleteBoard(BuildContext context) async
+  {
+    await dbManager.deleteBoard(widget.parentBoard.idBoard);
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const HomeBoard(),
+      ),
+    );
+  }
+
+  // pop up widget menu for parent board
+  late bool isBoardFavorite = (widget.parentBoard.isFavorite == 1)? true : false;
+  void _showBoardMenu() {
+    String favText = (isBoardFavorite)? 'Remove from Favorite':'Add to Favorite';
+    Icon favIcon = (isBoardFavorite)? const Icon(Icons.star) : const Icon(Icons.star_border) ;
+    showGeneralDialog(
+      context: context,
+      barrierDismissible: true,
+      barrierLabel: '',
+      transitionDuration: const Duration(milliseconds: 300),
+      pageBuilder: (context, anim1, anim2) {
+        return Align(
+          alignment: Alignment.center,
+          child: Dialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              width: 200,
+              height: 180,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Actions',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          color: Colors.blue,
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.of(context).pop();
+                        } ,
+                        child: const Icon(Icons.close),
+                      )
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  ListTile(
+                    leading: favIcon,
+                    title: Text(favText),
+                    onTap: () {
+                      var fav = (isBoardFavorite)? 0 : 1;
+                      updateFavBoard(Board(
+                          idBoard: widget.parentBoard.idBoard,
+                          namaBoard: widget.parentBoard.namaBoard,
+                          isFavorite: fav)
+                      );
+                      setState(() {
+                        isBoardFavorite = !isBoardFavorite;
+                      });
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.delete),
+                    title: const Text('Delete Board'),
+                    onTap: () {
+                      deleteBoard(context);
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+      transitionBuilder: (context, anim1, anim2, child) {
+        return SlideTransition(
+          position: Tween(
+            begin: const Offset(0, -1),
+            end: const Offset(0, 0),
+          ).animate(anim1),
+          child: child,
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     String textFav = (!isFavorite)? 'All Projects' : 'Fav Projects';
@@ -239,18 +347,43 @@ class _ProjectBoardState extends State<ProjectBoard> {
                 flex: 2,
                 child: Container(
                   alignment: Alignment.topLeft,
-                  padding: const EdgeInsets.fromLTRB(20, 20, 30, 0),
+                  padding: const EdgeInsets.fromLTRB(20, 0, 15, 0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
-                      Text(
-                        ' ${widget.parentBoard.namaBoard} ',
-                        style: const TextStyle(
-                          fontSize: 40,
-                          fontWeight: FontWeight.bold,
-                          wordSpacing: 5,
-                          color: Colors.black,
-                        ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Column(
+                            children: [
+                              const SizedBox(height: 20),
+                              Text(
+                                ' ${widget.parentBoard.namaBoard} ',
+                                style: const TextStyle(
+                                  fontSize: 40,
+                                  fontWeight: FontWeight.bold,
+                                  wordSpacing: 5,
+                                  color: Colors.black,
+                                )
+                              ),
+                            ],
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(top: 15.0),
+                            child: GestureDetector(
+                              onTap: () {
+                                _showBoardMenu();
+                              } ,
+                              child: Image.asset(
+                                  'assets/settings.png',
+                                  width: 25,
+                                  height: 25,
+                                  color: Colors.black,
+                              ),
+                            ),
+                          )
+                        ],
                       ),
                       const SizedBox(height: 15),
                       Container(

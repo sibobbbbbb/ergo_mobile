@@ -13,8 +13,10 @@ class ProjectBoard extends StatefulWidget {
 }
 
 class _ProjectBoardState extends State<ProjectBoard> {
+  bool isFavorite = false;
   final DatabaseManager dbManager = DatabaseManager();
   List<Project> projects = [];
+
   // Pagination
   int currentPage = 0;
   final int itemsPerPage = 6;
@@ -26,7 +28,10 @@ class _ProjectBoardState extends State<ProjectBoard> {
   }
 
   Future<void> loadProjects() async {
-    List<Project> loadedProjects = await dbManager.getProjectsByBoard(widget.parentBoard.idBoard);
+    List<Project> loadedProjects = (!isFavorite)?
+    await dbManager.getProjectsByBoard(widget.parentBoard.idBoard):
+    await dbManager.getFavProjectsByBoard(widget.parentBoard.idBoard);
+
     setState(() {
       projects = loadedProjects;
     });
@@ -207,6 +212,7 @@ class _ProjectBoardState extends State<ProjectBoard> {
 
   @override
   Widget build(BuildContext context) {
+    String textFav = (!isFavorite)? 'All Projects' : 'Fav Projects';
     int start = currentPage * itemsPerPage;
     int end = start + itemsPerPage;
     List<Project> displayProjects = projects.sublist(
@@ -361,10 +367,35 @@ class _ProjectBoardState extends State<ProjectBoard> {
                               'Previous',
                               style: TextStyle(
                                 color: Colors.black,
-                                fontSize: 24,
+                                fontSize: 17,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
+                          ),
+                          Column(
+                            children: <Widget>[
+                              Text(
+                                textFav,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.normal,
+                                  color: Colors.white,
+                                  fontSize: 12,
+                                ),
+                              ),
+                              Switch(
+                                value: isFavorite,
+                                onChanged: (value) {
+                                  setState(() {
+                                    isFavorite = value;
+                                    currentPage = 0;
+                                    loadProjects();
+                                  });
+                                },
+                                activeTrackColor: colorWidget,
+                                activeColor: const Color(0xFF022B42),
+                              ),
+
+                            ],
                           ),
                           ElevatedButton(
                             onPressed: end < projects.length
@@ -381,7 +412,7 @@ class _ProjectBoardState extends State<ProjectBoard> {
                               'Next',
                               style: TextStyle(
                                 color: Colors.black,
-                                fontSize: 24,
+                                fontSize: 17,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),

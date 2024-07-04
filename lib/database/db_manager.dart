@@ -12,15 +12,32 @@ class DatabaseManager {
     await db.delete('Projects');
     await db.delete('Tasks');
   }
+
   // Boards CRUD operations
   Future<void> createBoard(Board board) async {
     final db = await _databaseHelper.database;
-    await db.insert('Boards', board.toMap(), conflictAlgorithm: ConflictAlgorithm.replace);
+    await db.insert('Boards', board.toMap(),
+        conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
   Future<List<Board>> getAllBoards() async {
     final db = await _databaseHelper.database;
     final List<Map<String, dynamic>> maps = await db.query('Boards');
+    return List.generate(maps.length, (i) {
+      return Board(
+        idBoard: maps[i]['idBoard'],
+        namaBoard: maps[i]['namaBoard'],
+        isFavorite: maps[i]['isFavorite'],
+      );
+    });
+  }
+
+  Future<List<Board>> getAllFavBoards() async {
+    final db = await _databaseHelper.database;
+    final List<Map<String, dynamic>> maps = await db.query(
+        'Boards',
+        where: 'isFavorite = 1'
+    );
     return List.generate(maps.length, (i) {
       return Board(
         idBoard: maps[i]['idBoard'],
@@ -70,7 +87,8 @@ class DatabaseManager {
 
   Future<int> getLastBoardId() async {
     final db = await _databaseHelper.database;
-    final List<Map<String, dynamic>> result = await db.rawQuery('SELECT idBoard FROM Boards ORDER BY idBoard DESC LIMIT 1');
+    final List<Map<String, dynamic>> result = await db
+        .rawQuery('SELECT idBoard FROM Boards ORDER BY idBoard DESC LIMIT 1');
 
     if (result.isNotEmpty) {
       return result.first['idBoard'];
@@ -82,7 +100,8 @@ class DatabaseManager {
   // Projects CRUD operations
   Future<void> createProject(Project project) async {
     final db = await _databaseHelper.database;
-    await db.insert('Projects', project.toMap(), conflictAlgorithm: ConflictAlgorithm.replace);
+    await db.insert('Projects', project.toMap(),
+        conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
   Future<List<Project>> getAllProjects() async {
@@ -100,6 +119,7 @@ class DatabaseManager {
     });
   }
 
+
   // Projects by idBoard
   Future<List<Project>> getProjectsByBoard(int idBoard) async {
     final db = await _databaseHelper.database;
@@ -113,7 +133,26 @@ class DatabaseManager {
         idProject: maps[i]['idProject'],
         idBoard: maps[i]['idBoard'],
         namaProject: maps[i]['namaProject'],
-        tingkatKetuntasan: (maps[i]['tingkatKetuntasan'] as num).toDouble() ,
+        tingkatKetuntasan: (maps[i]['tingkatKetuntasan'] as num).toDouble(),
+        deadlineProject: maps[i]['deadlineProject'],
+        isFavorite: maps[i]['isFavorite'],
+      );
+    });
+  }
+
+  Future<List<Project>> getFavProjectsByBoard(int idBoard) async {
+    final db = await _databaseHelper.database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      'Projects',
+      where: 'idBoard = ? and isFavorite = 1',
+      whereArgs: [idBoard],
+    );
+    return List.generate(maps.length, (i) {
+      return Project(
+        idProject: maps[i]['idProject'],
+        idBoard: maps[i]['idBoard'],
+        namaProject: maps[i]['namaProject'],
+        tingkatKetuntasan: (maps[i]['tingkatKetuntasan'] as num).toDouble(),
         deadlineProject: maps[i]['deadlineProject'],
         isFavorite: maps[i]['isFavorite'],
       );
@@ -141,7 +180,8 @@ class DatabaseManager {
 
   Future<int> getLastProjectId() async {
     final db = await _databaseHelper.database;
-    final List<Map<String, dynamic>> result = await db.rawQuery('SELECT idProject FROM Projects ORDER BY idProject DESC LIMIT 1');
+    final List<Map<String, dynamic>> result = await db.rawQuery(
+        'SELECT idProject FROM Projects ORDER BY idProject DESC LIMIT 1');
 
     if (result.isNotEmpty) {
       return result.first['idProject'];
@@ -150,11 +190,11 @@ class DatabaseManager {
     }
   }
 
-
   // Tasks CRUD operations
   Future<void> createTask(Task task) async {
     final db = await _databaseHelper.database;
-    await db.insert('Tasks', task.toMap(), conflictAlgorithm: ConflictAlgorithm.replace);
+    await db.insert('Tasks', task.toMap(),
+        conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
   Future<List<Task>> getAllTasks() async {
@@ -215,7 +255,8 @@ class DatabaseManager {
 
   Future<int> getLastTaskId() async {
     final db = await _databaseHelper.database;
-    final List<Map<String, dynamic>> result = await db.rawQuery('SELECT idTask FROM Tasks ORDER BY idTask DESC LIMIT 1');
+    final List<Map<String, dynamic>> result = await db
+        .rawQuery('SELECT idTask FROM Tasks ORDER BY idTask DESC LIMIT 1');
 
     if (result.isNotEmpty) {
       return result.first['idTask'];
@@ -223,5 +264,4 @@ class DatabaseManager {
       return 0; // Return 0 if there are no tasks
     }
   }
-
 }

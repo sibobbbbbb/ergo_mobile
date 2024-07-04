@@ -14,6 +14,7 @@ class HomeBoard extends StatefulWidget {
 }
 
 class _HomeBoardState extends State<HomeBoard> {
+  bool isFavorite = false;
   final DatabaseManager dbManager = DatabaseManager();
   List<Board> boards = [];
 
@@ -28,7 +29,7 @@ class _HomeBoardState extends State<HomeBoard> {
   }
 
   Future<void> loadBoards() async {
-    List<Board> loadedBoards = await dbManager.getAllBoards();
+    List<Board> loadedBoards = (!isFavorite)? await dbManager.getAllBoards(): await dbManager.getAllFavBoards();
     setState(() {
       boards = loadedBoards;
     });
@@ -116,6 +117,7 @@ class _HomeBoardState extends State<HomeBoard> {
 
   @override
   Widget build(BuildContext context) {
+    String textFav = (!isFavorite)? 'All Boards' : 'Fav Boards';
     int start = currentPage * itemsPerPage;
     int end = start + itemsPerPage;
     List<Board> displayBoards = boards.sublist(
@@ -234,7 +236,7 @@ class _HomeBoardState extends State<HomeBoard> {
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Padding(
-                            padding: const EdgeInsets.fromLTRB(8, 23, 8, 8),
+                            padding: const EdgeInsets.fromLTRB(8, 16, 8, 8),
                             child: GridView.builder(
                               gridDelegate:
                                   const SliverGridDelegateWithFixedCrossAxisCount(
@@ -270,10 +272,35 @@ class _HomeBoardState extends State<HomeBoard> {
                               'Previous',
                               style: TextStyle(
                                 color: Colors.black,
-                                fontSize: 24,
+                                fontSize: 17,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
+                          ),
+                          Column(
+                            children: <Widget>[
+                              Text(
+                                  textFav,
+                                  style: const TextStyle(
+                                  fontWeight: FontWeight.normal,
+                                  color: Colors.white,
+                                  fontSize: 12,
+                                ),
+                              ),
+                              Switch(
+                                  value: isFavorite,
+                                  onChanged: (value) {
+                                    setState(() {
+                                      isFavorite = value;
+                                      currentPage = 0;
+                                      loadBoards();
+                                    });
+                                  },
+                                  activeTrackColor: colorWidget,
+                                  activeColor: const Color(0xFF022B42),
+                              ),
+
+                            ],
                           ),
                           ElevatedButton(
                             onPressed: end < boards.length
@@ -290,7 +317,7 @@ class _HomeBoardState extends State<HomeBoard> {
                               'Next',
                               style: TextStyle(
                                 color: Colors.black,
-                                fontSize: 24,
+                                fontSize: 17,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),

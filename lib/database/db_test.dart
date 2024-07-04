@@ -7,11 +7,11 @@ Future<void> test() async {
   await dbManager.deleteAllData();
 
   // Tambah data Board
-  Board board1 = Board(idBoard: 1, namaBoard: 'Ini board 1', isFavorite: 0);
+  Board board1 = Board(idBoard: 1, namaBoard: 'Ini board 1', isFavorite: 1);
   Board board2 = Board(idBoard: 2, namaBoard: 'Ini board 2', isFavorite: 0);
-  Board board3 = Board(idBoard: 3, namaBoard: 'Ini board 3', isFavorite: 0);
+  Board board3 = Board(idBoard: 3, namaBoard: 'Ini board 3', isFavorite: 1);
   Board board4 = Board(idBoard: 4, namaBoard: 'Ini board 4', isFavorite: 0);
-  Board board5 = Board(idBoard: 5, namaBoard: 'Ini board 5', isFavorite: 0);
+  Board board5 = Board(idBoard: 5, namaBoard: 'Ini board 5', isFavorite: 1);
 
   await dbManager.createBoard(board1);
   await dbManager.createBoard(board2);
@@ -25,7 +25,7 @@ Future<void> test() async {
 
   // Tambah data Project
   Project project1 = Project(idProject: 1, idBoard: 1, namaProject: 'Ini project 1', tingkatKetuntasan: 0.0, deadlineProject: '2022-12-31', isFavorite: 0);
-  Project project2 = Project(idProject: 2, idBoard: 1, namaProject: 'Ini project 2', tingkatKetuntasan: 0.0, deadlineProject: '2021-12-31', isFavorite: 0);
+  Project project2 = Project(idProject: 2, idBoard: 1, namaProject: 'Ini project 2', tingkatKetuntasan: 0.0, deadlineProject: '2021-12-31', isFavorite: 1);
   Project project3 = Project(idProject: 3, idBoard: 1, namaProject: 'Ini project 3', tingkatKetuntasan: 0.0, deadlineProject: '2020-12-31', isFavorite: 0);
 
   await dbManager.createProject(project1);

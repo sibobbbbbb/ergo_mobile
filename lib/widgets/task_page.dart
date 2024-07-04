@@ -502,7 +502,7 @@ class _TaskBoardState extends State<TaskBoard> {
                               'Previous',
                               style: TextStyle(
                                 color: Colors.black,
-                                fontSize: 24,
+                                fontSize: 17,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -522,7 +522,7 @@ class _TaskBoardState extends State<TaskBoard> {
                               'Next',
                               style: TextStyle(
                                 color: Colors.black,
-                                fontSize: 24,
+                                fontSize:17,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
